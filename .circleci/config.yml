@@ -1,0 +1,52 @@
+version: 2
+jobs:
+  build:
+    machine:
+      enabled: true
+      image: ubuntu-1604:201903-01
+      docker_layer_caching: true
+    steps:
+      - run:
+          name: Install kind
+          command: |
+            # GO111MODULE="on" go get sigs.k8s.io/kind@v0.4.0
+            curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.4.0/kind-linux-amd64
+            chmod +x ./kind
+            mv ./kind /usr/local/bin/kind
+      - run:
+          name: Create kind/kubernetes cluster
+          command: |
+            kind create cluster --image kindest/node:latest --config .circleci/config-OS-ci.yaml --loglevel debug
+            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
+            kubectl get nodes -o wide
+            kubectl get pods --all-namespaces -o wide
+            kubectl get services --all-namespaces -o wide
+      - run:
+          name: Clone Openstack-Helm repos
+          command: |
+            sudo chown -R ubuntu: /opt
+            git clone https://git.openstack.org/openstack/openstack-helm-infra.git /opt/openstack-helm-infra
+            git clone https://git.openstack.org/openstack/openstack-helm.git /opt/openstack-helm
+      - run:
+          name: Install Openstack-Helm
+          command: |
+            cd /opt/openstack-helm-infra
+            make dev-deploy setup-host multinode
+            make dev-deploy k8s multinode
+      - run:
+      - run:
+          command: |
+            mkdir -p /tmp/artifacts
+            kind export logs /tmp/artifacts
+      - store_artifacts:
+          path: /tmp/artifacts
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: /circle.*/
+
