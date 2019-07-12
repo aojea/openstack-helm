@@ -24,7 +24,7 @@ chown neutron: /run/openvswitch/db.sock
 # for now, if we cannot even get the version of neutron-sanity-check, skip
 # this validation.
 # see: https://bugs.launchpad.net/neutron/+bug/1769868
-if neutron-sanity-check --version >/dev/null 2>/dev/null; then
+# if neutron-sanity-check --version >/dev/null 2>/dev/null; then
   # ensure we can talk to openvswitch or bail early
   # this is until we can setup a proper dependency
   # on deaemonsets - note that a show is not sufficient
@@ -32,8 +32,8 @@ if neutron-sanity-check --version >/dev/null 2>/dev/null; then
   # which means we need to do a create action
   #
   # see https://github.com/att-comdev/openstack-helm/issues/88
-  timeout 3m neutron-sanity-check --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/openvswitch_agent.ini --ovsdb_native --nokeepalived_ipv6_support
-fi
+#   timeout 3m neutron-sanity-check --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/openvswitch_agent.ini --ovsdb_native --nokeepalived_ipv6_support
+# fi
 
 # handle any bridge mappings
 # /tmp/auto_bridge_add is one line json file: {"br-ex1":"eth1","br-ex2":"eth2"}
